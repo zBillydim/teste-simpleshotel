@@ -9,7 +9,10 @@ class Quarto extends Model
 {
     protected $fillable = ['numero', 'capacidade', 'preco_diaria', 'disponivel'];
 
-    // Relacionamento com as reservas
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class);
+    }
     public function reservar(ReservarRequest $request)
     {
         $reserva = Reserva::create([
@@ -18,7 +21,13 @@ class Quarto extends Model
             'quarto_id' => $this->id,
             'cliente_id' => $request->cliente_id,
         ]);
-
         return $reserva;
+    }
+    public static function listarQuartosDisponiveisPorData($data)
+    {
+        return self::whereDoesntHave('reservas', function ($query) use ($data) {
+            $query->whereDate('data_checkin', '<=', $data)
+                ->whereDate('data_checkout', '>=', $data);
+        })->get();
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\DisponiveisRequest;
 use App\Http\Requests\QuartoRequest;
 use App\Http\Requests\ReservarRequest;
 use App\Models\Quarto;
@@ -25,14 +26,17 @@ class QuartoController extends Controller
             return response()->json(['err' => 'erro'], 400);
         }
         return response()->json(['Success' => 'Quarto criado com sucesso', 'id' => $quarto->id], 201);
-
     }
     /**
      * Summary of ListarDisponiveis
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function ListarDisponiveis()
-    {
+    public function ListarDisponiveis($id = null)
+    {   
+        if(!is_null($id)){
+            $quartos = Quarto::where('id', $id)->get();
+            return response()->json(['quartos_disponiveis' => $quartos], 200);
+        }
         if (Redis::exists('quartos_disponiveis')) {
             $quartosDisponiveis = json_decode(Redis::get('quartos_disponiveis'), true);
             return response()->json(['quartos_disponiveis' => $quartosDisponiveis], 200);
@@ -41,7 +45,7 @@ class QuartoController extends Controller
         Redis::set('quartos_disponiveis', json_encode($quartos));
         Redis::expire('quartos_disponiveis', 60*60); // 1 hora de cache
         return response()->json(['quartos_disponiveis' => $quartos], 200);
-        }
+    }
     /**
      * Summary of ReservarQuarto
      * @param \App\Http\Requests\ReservarRequest $request
@@ -58,5 +62,9 @@ class QuartoController extends Controller
         }        
         return response()->json(['Success' => 'Reserva concluida com sucesso', 'data' => $reserva], 201);
     }
-
+    public function ListarQuartosDisponiveisPorData(DisponiveisRequest $request)
+    {
+        $quartosDisponiveis = Quarto::listarQuartosDisponiveisPorData($request->data);
+        return response()->json(['quartos_disponiveis' => $quartosDisponiveis], 200);
+    }
 }

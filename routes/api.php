@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ClienteController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\QuartoController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -17,15 +17,24 @@ use App\Http\Controllers\Auth\RegisterController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+/* ROTAS PUBLICAS */
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/criar-quarto', [QuartoController::class, 'CriaQuarto']);
-    Route::get('/quartos-disponiveis', [QuartoController::class, 'ListarDisponiveis']);
-    Route::post('/reservar', [QuartoController::class, 'ReservarQuarto']);   
+
+    /* QUARTO */
+    Route::prefix('/quarto')->group(function () {
+        Route::get('/', [QuartoController::class, 'ListarDisponiveis']);
+        Route::get('/{id}', [QuartoController::class, 'ListarDisponiveis']);
+        Route::post('/criar', [QuartoController::class, 'CriaQuarto']);
+        Route::post('/reservar', [QuartoController::class, 'ReservarQuarto']);   
+        Route::post('/disponivel', [QuartoController::class, 'ListarQuartosDisponiveisPorData']);
+    });
+
+    /* CLIENTES */
+    Route::prefix('/clientes')->group(function () {
+        Route::get('/', [ClienteController::class, 'index']);
+    });
 });
